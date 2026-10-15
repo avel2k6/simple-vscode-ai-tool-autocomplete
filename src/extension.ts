@@ -1,6 +1,46 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import axios from 'axios';
+
+const fecthData = async (text: string) => {
+	const config = vscode.workspace.getConfiguration('simple-vscode-ai-tool-autocomplete');
+	const baseUrl = config.get<string>('baseUrl');
+	const model = config.get<string>('model');
+	const apiKey = config.get<string>('apiKey');
+	const temperature = config.get<number>('temperature');
+
+	const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+	if (apiKey) {
+		headers['Authorization'] = `Bearer ${apiKey}`;
+	}
+
+	const postUrl = `${baseUrl}/chat/completions/`;
+
+	const data=  {
+      model,
+      temperature,
+      messages: [
+        { role: "system", content: "Ты опытный разработкик. Ты должен написать код, который надо вставить в <autocomplte_text_goes_here>."
+			+" Не приводи никаких рассуждений. В твоем ответе должень быть только текст, который вставится вместо <autocomplte_text_goes_here>." },
+        { role: "user", content: text }
+      ]
+    };
+	vscode.window.showInformationMessage(postUrl);
+	vscode.window.showInformationMessage(`model: ${model}`);
+	vscode.window.showInformationMessage(`temperature: ${temperature}`);
+	vscode.window.showInformationMessage(JSON.stringify(data));
+	
+  	const response = await axios.post(
+	`${postUrl}`,
+	data,
+    {
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+
+  return response.data;
+};
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -20,9 +60,31 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showWarningMessage('Нет активного редактора — откройте файл.');
 			return;
 		}
+		try {
+		const doc = editor.document;
+		const cursor = editor.selection.active; // позиция кусщтырсора
+		const lastLine = doc.lineCount - 1;
+		const lastLineEnd = doc.lineAt(lastLine).text.length;
+
+		console.log('fetching');
+
+		// Только строки выше строки курсора
+		const textAboveLines = doc.getText(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(cursor.line, cursor.character)));
+
+		// Только строки ниже строки курсора
+		const textBelowLines = doc.getText(new vscode.Range(new vscode.Position(cursor.line, cursor.character), new vscode.Position(lastLine, lastLineEnd)));
+
+		const prompt = `**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
+		const resp = await fecthData(prompt);
+
+		console.log(resp);
+
 		await editor.edit((edit) => {
-			edit.replace(editor.selection, 'hello world');
+			edit.replace(editor.selection, JSON.stringify(resp?.choices[0]?.message.content));
 		});
+		} catch (err) {
+			vscode.window.showErrorMessage((err as any).message);
+		}
 	});
 	
 

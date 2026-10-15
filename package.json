@@ -25,7 +25,37 @@
         "key": "alt+/",
         "when": "editorTextFocus"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "AI Autocomplete",
+      "properties": {
+        "simple-vscode-ai-tool-autocomplete.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Базовый URL OpenAI-совместимого API"
+        },
+        "simple-vscode-ai-tool-autocomplete.model": {
+          "type": "string",
+          "default": "",
+          "description": "Название модели"
+        },
+        "simple-vscode-ai-tool-autocomplete.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API-ключ (Bearer). Пусто — без авторизации"
+        },
+        "simple-vscode-ai-tool-autocomplete.temperature": {
+          "type": "number",
+          "default": 0.2,
+          "description": "Temperature генерации"
+        },
+        "simple-vscode-ai-tool-autocomplete.timeout": {
+          "type": "number",
+          "default": 30000,
+          "description": "Таймаут запроса, мс"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -55,5 +85,8 @@
   "overrides": {
     "diff": "^8.0.4",
     "serialize-javascript": "^7.0.6"
+  },
+  "dependencies": {
+    "axios": "^1.20.0"
   }
 }
