@@ -13,11 +13,18 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('simple-vscode-ai-tool-autocomplete.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from simple vscode ai tool autocomplete!');
+	const disposable = vscode.commands.registerCommand('simple-vscode-ai-tool-autocomplete.helloWorld', async () => {
+		// Insert 'hello world' at the cursor position in the active editor
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showWarningMessage('Нет активного редактора — откройте файл.');
+			return;
+		}
+		await editor.edit((edit) => {
+			edit.replace(editor.selection, 'hello world');
+		});
 	});
+	
 
 	context.subscriptions.push(disposable);
 }
