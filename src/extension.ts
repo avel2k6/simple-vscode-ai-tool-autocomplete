@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import path from 'path';
 import axios from 'axios';
 import { sanitizeAutocomplete } from './sanitize';
 
@@ -96,6 +97,7 @@ const runAutocomplete = async () => {
     }
     try {
         const doc = editor.document;
+        const fileName = doc.isUntitled ? undefined : path.basename(doc.uri.path);
 
         /*
          * Caret position
@@ -115,7 +117,8 @@ const runAutocomplete = async () => {
          */
         const textBelowLines = doc.getText(new vscode.Range(new vscode.Position(cursor.line, cursor.character), new vscode.Position(lastLine, lastLineEnd)));
 
-        const prompt = `**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
+        const fileLine = fileName ? `File: ${fileName}\n` : '';
+        const prompt = `${fileLine}**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
         const rawContent = await fetchAutocompeteText(prompt);
         const autocompleteText = sanitizeAutocomplete(rawContent);
 
