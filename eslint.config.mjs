@@ -114,5 +114,9 @@ export default defineConfig([
             '@typescript-eslint/no-require-imports': 'off',
         },
     },
-    globalIgnores(['dist/', 'out/']),
+    globalIgnores([
+        'dist/',
+        'out/',
+        '.vscode-test/',
+    ]),
 ]);
