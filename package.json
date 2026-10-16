@@ -15,13 +15,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "simple-vscode-ai-tool-autocomplete.helloWorld",
-        "title": "Hello World"
+        "command": "simple-vscode-ai-tool-autocomplete.autocomplete",
+        "title": "Autocomplete"
       }
     ],
     "keybindings": [
       {
-        "command": "simple-vscode-ai-tool-autocomplete.helloWorld",
+        "command": "simple-vscode-ai-tool-autocomplete.autocomplete",
         "key": "alt+/",
         "when": "editorTextFocus"
       }

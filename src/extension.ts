@@ -58,7 +58,7 @@ const fecthData = async (text: string) => {
 };
 
 export const activate = (context: vscode.ExtensionContext) => {
-    const disposable = vscode.commands.registerCommand('simple-vscode-ai-tool-autocomplete.helloWorld', async () => {
+    const disposable = vscode.commands.registerCommand('simple-vscode-ai-tool-autocomplete.autocomplete', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
             vscode.window.showWarningMessage(texts.errors.noEditor);

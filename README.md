@@ -15,7 +15,7 @@ Works with self-hosted servers, reverse proxies, or any hosted endpoint that spe
 
 ## How it works
 
-1. With a text editor focused, trigger the command (`Alt+/`, or **Hello World** in the Command Palette).
+1. With a text editor focused, trigger the command (`Alt+/`, or **Autocomplete** in the Command Palette).
 2. The extension reads the active editor and splits the document at the current caret:
    - everything **above** the caret, and
    - everything **from the caret to the end of the file**.
@@ -87,10 +87,8 @@ Minimal example:
 ## Usage
 
 1. Place the caret where you want the completion to appear.
-2. Press `Alt+/` (with a text editor focused), or open the Command Palette (`Ctrl+Shift+P`) and run **Hello World**.
+2. Press `Alt+/` (with a text editor focused), or open the Command Palette (`Ctrl+Shift+P`) and run **Autocomplete**.
 3. Wait for the request to finish — the generated code is inserted at the caret, replacing any current selection.
-
-> The command is still registered under the scaffold name `helloWorld` / title **Hello World** (a leftover from the extension template). This is cosmetic only — it performs the AI completion described above.
 
 ## Project structure
 
