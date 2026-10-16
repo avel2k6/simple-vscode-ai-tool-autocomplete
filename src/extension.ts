@@ -13,10 +13,16 @@ const texts = {
                 + ' Do not wrap the answer in a markdown code block (``` or similar) — return only plain code.',
 
     requestNotification: 'Request autocompete',
+    otherFilesHeader: 'Other open files:',
     errors: {
         noEditor: 'No active editor. Please open a file.',
     },
 };
+
+/**
+ * Maximum number of characters of another tab's content included in the prompt.
+ */
+const MAX_OTHER_TAB_CHARS = 4000;
 
 /**
  * Reads the extension settings from the workspace configuration.
@@ -31,6 +37,7 @@ const getConfig = () => {
         temperature: config.get<number>('temperature'),
         timeout: config.get<number>('timeout'),
         debounceMs: config.get<number>('debounceMs'),
+        includeOtherTabs: config.get<boolean>('includeOtherTabs'),
     };
 };
 
@@ -96,6 +103,7 @@ const runAutocomplete = async () => {
         return;
     }
     try {
+        const { includeOtherTabs } = getConfig();
         const doc = editor.document;
         const fileName = doc.isUntitled ? undefined : path.basename(doc.uri.path);
 
@@ -118,8 +126,30 @@ const runAutocomplete = async () => {
         const textBelowLines = doc.getText(new vscode.Range(new vscode.Position(cursor.line, cursor.character), new vscode.Position(lastLine, lastLineEnd)));
 
         const fileLine = fileName ? `File: ${fileName}\n` : '';
-        const prompt = `${fileLine}**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
+
+        /*
+         * Contents of the other visible tabs, as optional context.
+         * Each file is truncated to MAX_OTHER_TAB_CHARS.
+         */
+        const otherTabsSection = includeOtherTabs
+            ? vscode.window.visibleTextEditors
+                .filter((tab) => tab !== editor)
+                .map((tab) => {
+                    const tabName = path.basename(tab.document.uri.path);
+                    const tabContent = tab.document.getText().slice(0, MAX_OTHER_TAB_CHARS);
+
+                    return `=== ${tabName} ===\n${tabContent}`;
+                })
+                .join('\n\n')
+            : '';
+
+        const otherTabsBlock = otherTabsSection
+            ? `\n\n${texts.otherFilesHeader}\n${otherTabsSection}`
+            : '';
+        const prompt = `${fileLine}**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**${otherTabsBlock}`;
+
         const rawContent = await fetchAutocompeteText(prompt);
+
         const autocompleteText = sanitizeAutocomplete(rawContent);
 
         await editor.edit((edit) => {

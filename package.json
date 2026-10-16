@@ -58,6 +58,11 @@
           "type": "number",
           "default": 300,
           "description": "Debounce delay for the autocomplete hotkey, in milliseconds. Repeated presses within this window collapse into a single request."
+        },
+        "simple-vscode-ai-tool-autocomplete.includeOtherTabs": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include the contents of other visible tabs in the request as context."
         }
       }
     }
