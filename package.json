@@ -31,8 +31,8 @@
       "properties": {
         "simple-vscode-ai-tool-autocomplete.baseUrl": {
           "type": "string",
-          "default": "",
-          "description": "Base URL of an OpenAI-compatible API."
+          "default": "http://localhost:1234/v1/chat/completions",
+          "description": "Base URL of an OpenAI-compatible completions API.(Example: http://localhost:1234/v1/chat/completions)"
         },
         "simple-vscode-ai-tool-autocomplete.model": {
           "type": "string",

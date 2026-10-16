@@ -14,6 +14,7 @@ const texts = {
                 + '* Do not wrap the answer in a markdown code block (``` or similar) — return only plain code.',
 
     requestNotification: 'Request autocompete',
+    nothingToComplete: 'Empty autocomplete responce',
     otherFilesHeader: 'Other open files:',
     errors: {
         noEditor: 'No active editor. Please open a file.',
@@ -55,8 +56,6 @@ const fetchAutocompeteText = async (text: string) => {
         headers['Authorization'] = `Bearer ${apiKey}`;
     }
 
-    const postUrl = `${baseUrl}/chat/completions/`;
-
     const data= {
         model,
         temperature,
@@ -74,7 +73,7 @@ const fetchAutocompeteText = async (text: string) => {
     vscode.window.showInformationMessage(texts.requestNotification);
 
     const response = await axios.post(
-        `${postUrl}`,
+        `${baseUrl}`,
         data,
         {
             headers,
@@ -82,7 +81,7 @@ const fetchAutocompeteText = async (text: string) => {
         },
     );
 
-    const result = response.data.choices[0].message.content;
+    const result = response?.data?.choices[0]?.message?.content || '';
 
     return result;
 };
@@ -150,6 +149,10 @@ const runAutocomplete = async () => {
         const prompt = `${fileLine}**${textAboveLines}${AUTOCOMPLETE_PLACEHOLDER}${textBelowLines}**${otherTabsBlock}`;
 
         const rawContent = await fetchAutocompeteText(prompt);
+
+        if (!rawContent) {
+            vscode.window.showInformationMessage(texts.nothingToComplete);
+        }
 
         const autocompleteText = sanitizeAutocomplete(rawContent);
 
