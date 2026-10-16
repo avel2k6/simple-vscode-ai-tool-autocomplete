@@ -3,14 +3,15 @@ import path from 'path';
 import axios from 'axios';
 import { sanitizeAutocomplete } from './sanitize';
 
+const AUTOCOMPLETE_PLACEHOLDER = '<AUTOCOMPLETE_TEXT_GOES_HERE>';
 
 /**
  * User-facing strings: the base prompt, notifications and error messages.
  */
 const texts = {
-    basePrompt: 'You are an experienced developer. Write only the code that should be inserted in place of <autocomplte_text_goes_here>.'
-                + ' Do not include any reasoning — your answer must contain only the text that will replace <autocomplte_text_goes_here>.'
-                + ' Do not wrap the answer in a markdown code block (``` or similar) — return only plain code.',
+    basePrompt: `* You are an experienced developer. Write only the code that should be inserted in place of ${AUTOCOMPLETE_PLACEHOLDER}.`
+                + `* Do not include any reasoning — your answer must contain only the text that will replace ${AUTOCOMPLETE_PLACEHOLDER}.`
+                + '* Do not wrap the answer in a markdown code block (``` or similar) — return only plain code.',
 
     requestNotification: 'Request autocompete',
     otherFilesHeader: 'Other open files:',
@@ -146,7 +147,7 @@ const runAutocomplete = async () => {
         const otherTabsBlock = otherTabsSection
             ? `\n\n${texts.otherFilesHeader}\n${otherTabsSection}`
             : '';
-        const prompt = `${fileLine}**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**${otherTabsBlock}`;
+        const prompt = `${fileLine}**${textAboveLines}${AUTOCOMPLETE_PLACEHOLDER}${textBelowLines}**${otherTabsBlock}`;
 
         const rawContent = await fetchAutocompeteText(prompt);
 
