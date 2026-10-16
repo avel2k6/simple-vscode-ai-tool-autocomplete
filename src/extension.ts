@@ -14,13 +14,23 @@ const texts = {
     },
 };
 
-const fecthData = async (text: string) => {
+const getConfig = () => {
     const config = vscode.workspace.getConfiguration('simple-vscode-ai-tool-autocomplete');
-    const baseUrl = config.get<string>('baseUrl');
-    const model = config.get<string>('model');
-    const apiKey = config.get<string>('apiKey');
-    const temperature = config.get<number>('temperature');
-    const timeout = config.get<number>('timeout');
+
+    return {
+        baseUrl: config.get<string>('baseUrl'),
+        model: config.get<string>('model'),
+        apiKey: config.get<string>('apiKey'),
+        temperature: config.get<number>('temperature'),
+        timeout: config.get<number>('timeout'),
+        debounceMs: config.get<number>('debounceMs'),
+    };
+};
+
+const fecthData = async (text: string) => {
+    const {
+        baseUrl, model, apiKey, temperature, timeout,
+    } = getConfig();
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (apiKey) {
@@ -103,7 +113,7 @@ export const activate = (context: vscode.ExtensionContext) => {
         timer = setTimeout(() => {
             timer = undefined;
             void runAutocomplete();
-        }, vscode.workspace.getConfiguration('simple-vscode-ai-tool-autocomplete').get<number>('debounceMs') ?? 300);
+        }, getConfig().debounceMs ?? 0);
     });
 
     context.subscriptions.push(disposable);
