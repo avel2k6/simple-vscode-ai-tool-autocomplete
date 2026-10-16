@@ -36,7 +36,7 @@ const getConfig = () => {
 /**
  * Sends a chat completion request to the LLM API and returns the raw response.
  */
-const fetchData = async (text: string) => {
+const fetchAutocompeteText = async (text: string) => {
     const {
         baseUrl, model, apiKey, temperature, timeout,
     } = getConfig();
@@ -73,7 +73,9 @@ const fetchData = async (text: string) => {
         },
     );
 
-    return response.data;
+    const result = response.data.choices[0].message.content;
+
+    return result;
 };
 
 /**
@@ -114,9 +116,7 @@ const runAutocomplete = async () => {
         const textBelowLines = doc.getText(new vscode.Range(new vscode.Position(cursor.line, cursor.character), new vscode.Position(lastLine, lastLineEnd)));
 
         const prompt = `**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
-        const resp = await fetchData(prompt);
-
-        const rawContent = resp?.choices[0]?.message.content ?? '';
+        const rawContent = await fetchAutocompeteText(prompt);
         const autocompleteText = sanitizeAutocomplete(rawContent);
 
         await editor.edit((edit) => {
