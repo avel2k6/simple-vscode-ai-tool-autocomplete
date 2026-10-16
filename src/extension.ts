@@ -91,7 +91,8 @@ export function activate(context: vscode.ExtensionContext) {
                 edit.replace(editor.selection, JSON.stringify(resp?.choices[0]?.message.content));
             });
         } catch (err) {
-            vscode.window.showErrorMessage((err as any).message);
+            const message = err instanceof Error ? err.message : String(err);
+            vscode.window.showErrorMessage(message);
         }
     });
 

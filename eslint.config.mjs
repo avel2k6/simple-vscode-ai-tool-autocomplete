@@ -100,5 +100,19 @@ export default defineConfig([
             ],
         },
     },
+    {
+        files: ['webpack.config.js'],
+        languageOptions: {
+            sourceType: 'commonjs',
+            globals: {
+                require: 'readonly',
+                module: 'writable',
+                __dirname: 'readonly',
+            },
+        },
+        rules: {
+            '@typescript-eslint/no-require-imports': 'off',
+        },
+    },
     globalIgnores(['dist/', 'out/']),
 ]);
