@@ -32,27 +32,27 @@
         "simple-vscode-ai-tool-autocomplete.baseUrl": {
           "type": "string",
           "default": "",
-          "description": "Базовый URL OpenAI-совместимого API"
+          "description": "Base URL of an OpenAI-compatible API."
         },
         "simple-vscode-ai-tool-autocomplete.model": {
           "type": "string",
           "default": "",
-          "description": "Название модели"
+          "description": "Model name to send in the request body."
         },
         "simple-vscode-ai-tool-autocomplete.apiKey": {
           "type": "string",
           "default": "",
-          "description": "API-ключ (Bearer). Пусто — без авторизации"
+          "description": "API key, sent as a Bearer token. Leave empty for endpoints without authentication."
         },
         "simple-vscode-ai-tool-autocomplete.temperature": {
           "type": "number",
           "default": 0.2,
-          "description": "Temperature генерации"
+          "description": "Sampling temperature for the completion."
         },
         "simple-vscode-ai-tool-autocomplete.timeout": {
           "type": "number",
           "default": 30000,
-          "description": "Таймаут запроса, мс"
+          "description": "Request timeout, in milliseconds."
         }
       }
     }

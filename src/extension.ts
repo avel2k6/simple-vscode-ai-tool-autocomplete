@@ -1,5 +1,3 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import axios from 'axios';
 import { sanitizeAutocomplete } from './sanitize';
@@ -51,14 +49,8 @@ const fecthData = async (text: string) => {
     return response.data;
 };
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with registerCommand
-    // The commandId parameter must match the command field in package.json
     const disposable = vscode.commands.registerCommand('simple-vscode-ai-tool-autocomplete.helloWorld', async () => {
-        // Insert 'hello world' at the cursor position in the active editor
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
             vscode.window.showWarningMessage('Нет активного редактора — откройте файл.');
@@ -67,15 +59,15 @@ export function activate(context: vscode.ExtensionContext) {
         }
         try {
             const doc = editor.document;
-            const cursor = editor.selection.active; // позиция кусщтырсора
+            const cursor = editor.selection.active; // caret position
             const lastLine = doc.lineCount - 1;
             const lastLineEnd = doc.lineAt(lastLine).text.length;
 
 
-            // Только строки выше строки курсора
+            // Everything above the caret (start of the file up to the cursor)
             const textAboveLines = doc.getText(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(cursor.line, cursor.character)));
 
-            // Только строки ниже строки курсора
+            // Everything from the caret to the end of the file
             const textBelowLines = doc.getText(new vscode.Range(new vscode.Position(cursor.line, cursor.character), new vscode.Position(lastLine, lastLineEnd)));
 
             const prompt = `**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
@@ -97,5 +89,4 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
