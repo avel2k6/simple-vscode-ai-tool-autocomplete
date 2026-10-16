@@ -57,44 +57,61 @@ const fecthData = async (text: string) => {
     return response.data;
 };
 
+let timer: ReturnType<typeof setTimeout> | undefined;
+
+const runAutocomplete = async () => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        vscode.window.showWarningMessage(texts.errors.noEditor);
+
+        return;
+    }
+    try {
+        const doc = editor.document;
+        const cursor = editor.selection.active; // caret position
+        const lastLine = doc.lineCount - 1;
+        const lastLineEnd = doc.lineAt(lastLine).text.length;
+
+
+        // Everything above the caret (start of the file up to the cursor)
+        const textAboveLines = doc.getText(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(cursor.line, cursor.character)));
+
+        // Everything from the caret to the end of the file
+        const textBelowLines = doc.getText(new vscode.Range(new vscode.Position(cursor.line, cursor.character), new vscode.Position(lastLine, lastLineEnd)));
+
+        const prompt = `**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
+        const resp = await fecthData(prompt);
+
+        const rawContent = resp?.choices[0]?.message.content ?? '';
+        const autocompleteText = sanitizeAutocomplete(rawContent);
+
+        await editor.edit((edit) => {
+            edit.replace(editor.selection, autocompleteText);
+        });
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        vscode.window.showErrorMessage(message);
+    }
+};
+
 export const activate = (context: vscode.ExtensionContext) => {
-    const disposable = vscode.commands.registerCommand('simple-vscode-ai-tool-autocomplete.autocomplete', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showWarningMessage(texts.errors.noEditor);
-
-            return;
+    const disposable = vscode.commands.registerCommand('simple-vscode-ai-tool-autocomplete.autocomplete', () => {
+        if (timer) {
+            clearTimeout(timer);
         }
-        try {
-            const doc = editor.document;
-            const cursor = editor.selection.active; // caret position
-            const lastLine = doc.lineCount - 1;
-            const lastLineEnd = doc.lineAt(lastLine).text.length;
 
-
-            // Everything above the caret (start of the file up to the cursor)
-            const textAboveLines = doc.getText(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(cursor.line, cursor.character)));
-
-            // Everything from the caret to the end of the file
-            const textBelowLines = doc.getText(new vscode.Range(new vscode.Position(cursor.line, cursor.character), new vscode.Position(lastLine, lastLineEnd)));
-
-            const prompt = `**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
-            const resp = await fecthData(prompt);
-
-            const rawContent = resp?.choices[0]?.message.content ?? '';
-            const autocompleteText = sanitizeAutocomplete(rawContent);
-
-            await editor.edit((edit) => {
-                edit.replace(editor.selection, autocompleteText);
-            });
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            vscode.window.showErrorMessage(message);
-        }
+        timer = setTimeout(() => {
+            timer = undefined;
+            void runAutocomplete();
+        }, vscode.workspace.getConfiguration('simple-vscode-ai-tool-autocomplete').get<number>('debounceMs') ?? 300);
     });
-
 
     context.subscriptions.push(disposable);
 };
 
-export const deactivate = () => {};
+export const deactivate = () => {
+    if (timer) {
+        clearTimeout(timer);
+        timer = undefined;
+    }
+};
