@@ -3,10 +3,13 @@ import axios from 'axios';
 import { sanitizeAutocomplete } from './sanitize';
 
 
+/**
+ * User-facing strings: the base prompt, notifications and error messages.
+ */
 const texts = {
     basePrompt: 'You are an experienced developer. Write only the code that should be inserted in place of <autocomplte_text_goes_here>.'
-                    + ' Do not include any reasoning — your answer must contain only the text that will replace <autocomplte_text_goes_here>.'
-                    + ' Do not wrap the answer in a markdown code block (``` or similar) — return only plain code.',
+                + ' Do not include any reasoning — your answer must contain only the text that will replace <autocomplte_text_goes_here>.'
+                + ' Do not wrap the answer in a markdown code block (``` or similar) — return only plain code.',
 
     requestNotification: 'Request autocompete',
     errors: {
@@ -14,6 +17,9 @@ const texts = {
     },
 };
 
+/**
+ * Reads the extension settings from the workspace configuration.
+ */
 const getConfig = () => {
     const config = vscode.workspace.getConfiguration('simple-vscode-ai-tool-autocomplete');
 
@@ -27,7 +33,10 @@ const getConfig = () => {
     };
 };
 
-const fecthData = async (text: string) => {
+/**
+ * Sends a chat completion request to the LLM API and returns the raw response.
+ */
+const fetchData = async (text: string) => {
     const {
         baseUrl, model, apiKey, temperature, timeout,
     } = getConfig();
@@ -67,8 +76,15 @@ const fecthData = async (text: string) => {
     return response.data;
 };
 
+/**
+ * Pending debounce timer handle for the autocomplete command.
+ */
 let timer: ReturnType<typeof setTimeout> | undefined;
 
+/**
+ * Builds a prompt from the document around the caret, requests a completion
+ * and inserts the result at the caret position.
+ */
 const runAutocomplete = async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -78,19 +94,27 @@ const runAutocomplete = async () => {
     }
     try {
         const doc = editor.document;
-        const cursor = editor.selection.active; // caret position
+
+        /*
+         * Caret position
+         */
+        const cursor = editor.selection.active;
         const lastLine = doc.lineCount - 1;
         const lastLineEnd = doc.lineAt(lastLine).text.length;
 
 
-        // Everything above the caret (start of the file up to the cursor)
+        /*
+         * Everything above the caret (start of the file up to the cursor)
+         */
         const textAboveLines = doc.getText(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(cursor.line, cursor.character)));
 
-        // Everything from the caret to the end of the file
+        /*
+         * Everything from the caret to the end of the file
+         */
         const textBelowLines = doc.getText(new vscode.Range(new vscode.Position(cursor.line, cursor.character), new vscode.Position(lastLine, lastLineEnd)));
 
         const prompt = `**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
-        const resp = await fecthData(prompt);
+        const resp = await fetchData(prompt);
 
         const rawContent = resp?.choices[0]?.message.content ?? '';
         const autocompleteText = sanitizeAutocomplete(rawContent);
@@ -104,6 +128,9 @@ const runAutocomplete = async () => {
     }
 };
 
+/**
+ * Registers the autocomplete command with debouncing.
+ */
 export const activate = (context: vscode.ExtensionContext) => {
     const disposable = vscode.commands.registerCommand('simple-vscode-ai-tool-autocomplete.autocomplete', () => {
         if (timer) {
@@ -119,6 +146,9 @@ export const activate = (context: vscode.ExtensionContext) => {
     context.subscriptions.push(disposable);
 };
 
+/**
+ * Cancels the pending debounce timer on deactivation.
+ */
 export const deactivate = () => {
     if (timer) {
         clearTimeout(timer);
