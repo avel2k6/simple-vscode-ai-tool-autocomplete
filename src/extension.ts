@@ -3,12 +3,24 @@ import axios from 'axios';
 import { sanitizeAutocomplete } from './sanitize';
 
 
+const texts = {
+    basePrompt: 'You are an experienced developer. Write only the code that should be inserted in place of <autocomplte_text_goes_here>.'
+                    + ' Do not include any reasoning — your answer must contain only the text that will replace <autocomplte_text_goes_here>.'
+                    + ' Do not wrap the answer in a markdown code block (``` or similar) — return only plain code.',
+
+    requestNotification: 'Request autocompete',
+    errors: {
+        noEditor: 'No active editor. Please open a file.',
+    },
+};
+
 const fecthData = async (text: string) => {
     const config = vscode.workspace.getConfiguration('simple-vscode-ai-tool-autocomplete');
     const baseUrl = config.get<string>('baseUrl');
     const model = config.get<string>('model');
     const apiKey = config.get<string>('apiKey');
     const temperature = config.get<number>('temperature');
+    const timeout = config.get<number>('timeout');
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (apiKey) {
@@ -23,9 +35,7 @@ const fecthData = async (text: string) => {
         messages: [
             {
                 role: 'system',
-                content: 'Ты опытный разработкик. Ты должен написать код, который надо вставить в <autocomplte_text_goes_here>.'
-			+' Не приводи никаких рассуждений. В твоем ответе должень быть только текст, который вставится вместо <autocomplte_text_goes_here>.'
-			+' Не оборачивай ответ в markdown-блок (``` и т.д.) — возвращай только чистый код.',
+                content: texts.basePrompt,
             },
             {
                 role: 'user',
@@ -33,27 +43,25 @@ const fecthData = async (text: string) => {
             },
         ],
     };
-    vscode.window.showInformationMessage(postUrl);
-    vscode.window.showInformationMessage(`model: ${model}`);
-    vscode.window.showInformationMessage(`temperature: ${temperature}`);
-    vscode.window.showInformationMessage(JSON.stringify(data));
+    vscode.window.showInformationMessage(texts.requestNotification);
 
     const response = await axios.post(
         `${postUrl}`,
         data,
         {
-            headers: { 'Content-Type': 'application/json' },
+            headers,
+            timeout,
         },
     );
 
     return response.data;
 };
 
-export function activate(context: vscode.ExtensionContext) {
+export const activate = (context: vscode.ExtensionContext) => {
     const disposable = vscode.commands.registerCommand('simple-vscode-ai-tool-autocomplete.helloWorld', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
-            vscode.window.showWarningMessage('Нет активного редактора — откройте файл.');
+            vscode.window.showWarningMessage(texts.errors.noEditor);
 
             return;
         }
@@ -87,6 +95,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     context.subscriptions.push(disposable);
-}
+};
 
-export function deactivate() {}
+export const deactivate = () => {};

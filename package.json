@@ -2,7 +2,7 @@
   "name": "simple-vscode-ai-tool-autocomplete",
   "displayName": "simple vscode ai tool autocomplete",
   "publisher": "avel2k6",
-  "description": "",
+  "description": "AI-powered inline code autocomplete for VS Code, backed by any OpenAI-compatible chat API.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.140.0"

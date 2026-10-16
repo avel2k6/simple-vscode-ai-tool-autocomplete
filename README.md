@@ -20,9 +20,11 @@ Works with self-hosted servers, reverse proxies, or any hosted endpoint that spe
    - everything **above** the caret, and
    - everything **from the caret to the end of the file**.
 3. It builds a prompt of the form:
+
    ```
    **{text above caret}<autocomplte_text_goes_here>{text below caret}**
    ```
+
    The `<autocomplte_text_goes_here>` token marks the exact spot where the completion belongs; the surrounding text is included purely as context.
 4. The prompt is sent as a chat-completion request to `{baseUrl}/chat/completions/`.
 5. A system prompt instructs the model to return **only** the code that belongs at that token — no explanations and no Markdown wrapping.
@@ -69,7 +71,7 @@ Open Settings (`Ctrl+,`) and search for **AI Autocomplete**, or edit `settings.j
 | `simple-vscode-ai-tool-autocomplete.model` | `string` | `""` | Model name to send in the request body. |
 | `simple-vscode-ai-tool-autocomplete.apiKey` | `string` | `""` | API key, sent as `Authorization: Bearer <key>`. Leave empty for endpoints that don't require auth. |
 | `simple-vscode-ai-tool-autocomplete.temperature` | `number` | `0.2` | Sampling temperature for the completion. |
-| `simple-vscode-ai-tool-autocomplete.timeout` | `number` | `30000` | Intended request timeout in milliseconds (see [Known limitations](#known-limitations)). |
+| `simple-vscode-ai-tool-autocomplete.timeout` | `number` | `30000` | Request timeout in milliseconds for the API call. |
 
 Minimal example:
 
@@ -140,13 +142,6 @@ Minimal example:
 - `npm test` builds everything and runs the suite inside a VS Code test host via `@vscode/test-cli` (configured in `.vscode-test.mjs` to pick up `out/test/**/*.test.js`).
 - Alternatively, use the **Testing** view with the recommended *Extension Test Runner* extension — run the `tasks: watch-tests` task first so newly added tests are picked up.
 - Tests live in `src/test/**/*.test.ts`. `src/test/sanitize.test.ts` holds the real unit tests; `src/test/extension.test.ts` is a placeholder from the scaffold.
-
-## Known limitations
-
-- **`timeout` is not yet applied.** The setting is declared, but the outgoing `axios` request is created without a `timeout` option, so long-running requests are not currently bounded by it.
-- **`apiKey` is not yet sent.** An `Authorization: Bearer` header is prepared from the setting, but the request is sent with a separate headers object that omits it, so the key is currently not attached to the call.
-- **Verbose debug output.** The extension currently shows several information toasts (request URL, model, temperature, and the full request body) on every completion.
-- **Scaffold naming.** The command ID/title (`helloWorld` / **Hello World**) and the placeholder token (`<autocomplte_text_goes_here>`, note the original spelling) are leftovers from the extension template and carry no functional meaning.
 
 ## License
 
