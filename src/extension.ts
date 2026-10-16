@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import axios from 'axios';
+import { sanitizeAutocomplete } from './sanitize';
 
 
 const fecthData = async (text: string) => {
@@ -25,7 +26,8 @@ const fecthData = async (text: string) => {
             {
                 role: 'system',
                 content: 'Ты опытный разработкик. Ты должен написать код, который надо вставить в <autocomplte_text_goes_here>.'
-			+' Не приводи никаких рассуждений. В твоем ответе должень быть только текст, который вставится вместо <autocomplte_text_goes_here>.',
+			+' Не приводи никаких рассуждений. В твоем ответе должень быть только текст, который вставится вместо <autocomplte_text_goes_here>.'
+			+' Не оборачивай ответ в markdown-блок (``` и т.д.) — возвращай только чистый код.',
             },
             {
                 role: 'user',
@@ -52,11 +54,6 @@ const fecthData = async (text: string) => {
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "simple-vscode-ai-tool-autocomplete" is now active!');
-
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
@@ -74,7 +71,6 @@ export function activate(context: vscode.ExtensionContext) {
             const lastLine = doc.lineCount - 1;
             const lastLineEnd = doc.lineAt(lastLine).text.length;
 
-            console.log('fetching');
 
             // Только строки выше строки курсора
             const textAboveLines = doc.getText(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(cursor.line, cursor.character)));
@@ -85,10 +81,11 @@ export function activate(context: vscode.ExtensionContext) {
             const prompt = `**${textAboveLines}<autocomplte_text_goes_here>${textBelowLines}**`;
             const resp = await fecthData(prompt);
 
-            console.log(resp);
+            const rawContent = resp?.choices[0]?.message.content ?? '';
+            const autocompleteText = sanitizeAutocomplete(rawContent);
 
             await editor.edit((edit) => {
-                edit.replace(editor.selection, JSON.stringify(resp?.choices[0]?.message.content));
+                edit.replace(editor.selection, autocompleteText);
             });
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
